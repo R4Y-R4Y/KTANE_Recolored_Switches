@@ -12,9 +12,10 @@ public class Recolored_Switches : MonoBehaviour {
     int moduleID;
     bool moduleSolved;
     int stage = 0;
-    int last;
+    int lastFlipped;
+    int correctSwitch;
+    bool[] switchStates = new bool[5];
     string[] order = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "last" };
-    List<int> Submission;
     public KMBombInfo Bomb;
     public KMBombModule Module;
     public Material[] SwitchesColors;
@@ -24,6 +25,9 @@ public class Recolored_Switches : MonoBehaviour {
     int[] ledIndices = new int[10];
     int[] switchIndices = new int[5];
     string colorNames = "OPGRBCW";
+    int[][] tableLow  = new int[][] { new int[] { 0, 0, 4, 2, 2, 2, 3 }, new int[] { 2, 2, 1, 2, 0, 3, 1 }, new int[] { 3, 2, 2, 0, 4, 2, 4 }, new int[] { 2, 0, 0, 3, 2, 2, 1 }, new int[] { 0, 2, 1, 3, 2, 0, 4 }, new int[] { 2, 0, 1, 0, 2, 4, 3 } };
+    int[][] tableHigh = new int[][] { new int[] { 2, 1, 1, 3, 1, 4, 4 }, new int[] { 4, 2, 0, 0, 3, 4, 0 }, new int[] { 1, 3, 2, 4, 4, 1, 1 }, new int[] { 3, 3, 2, 0, 3, 3, 1 }, new int[] { 3, 2, 2, 0, 3, 3, 1 }, new int[] { 2, 4, 1, 0, 0, 3, 4 } };
+    bool isAnimating;
 
     // Use this for initialization
     //Debug.LogFormat("[Recolored Switches #{0}]", moduleID);
@@ -34,6 +38,8 @@ public class Recolored_Switches : MonoBehaviour {
         GenerateSwitches();
         FlipSwitchRandom();
         Debug.LogFormat("[Recolored Switches #{0}] The switches colors are: {1}", moduleID, SwitchesColorsString.ToString());
+        Debug.Log(switchIndices.Join());
+        lastFlipped = switchIndices[2];
         GenerateLEDs();
         SetLEDColor();
         for (int i = 0; i < 5; i++)
@@ -60,7 +66,7 @@ public class Recolored_Switches : MonoBehaviour {
             StartCoroutine(FlipSwitch(pos));
             return;
         }
-        if (true)
+        if (correctSwitch == pos)
         {
             StartCoroutine(FlipSwitch(pos));
             if (stage == 9) 
@@ -73,7 +79,12 @@ public class Recolored_Switches : MonoBehaviour {
 					LEDs[i].GetComponent<MeshRenderer>().material = LEDsColors[7];
 				} 
 			}
-            else{stage++; SetLEDColor();}
+            else
+            {
+                stage++;
+                lastFlipped = switchIndices[pos];
+                SetLEDColor();
+            }
         }
         else
         {
@@ -85,6 +96,8 @@ public class Recolored_Switches : MonoBehaviour {
     }
     IEnumerator FlipSwitch(int selected)
     {
+        isAnimating = true;
+        switchStates[selected] = !switchStates[selected];
         const float duration = .3f;
         var startTime = Time.fixedTime;
         if (Switches[selected].transform.localEulerAngles.x >= 50 && Switches[selected].transform.localEulerAngles.x <= 60)
@@ -107,6 +120,7 @@ public class Recolored_Switches : MonoBehaviour {
             while (Time.fixedTime < startTime + duration);
             Switches[selected].transform.localEulerAngles = new Vector3(55f, 0, 0);
         }
+        isAnimating = false;
     }
     private float easeOutSine(float time, float duration, float from, float to)
     {
@@ -116,11 +130,7 @@ public class Recolored_Switches : MonoBehaviour {
     {
         Debug.LogFormat("[Recolored Switches #{0}] The {2} LED Color is: {1}", moduleID, LEDsColorsString[stage], order[stage]);
         LEDs[stage].GetComponent<MeshRenderer>().material = LEDsColors[ledIndices[stage]];
-        Debug.LogFormat("[Recolored Switches #{0}] The safe {1}", moduleID, LoggingSafePos());
-    }
-    string LoggingSafePos()
-    {
-        return "notimplemented";
+        GenerateStage();
     }
 	void GenerateLEDs()
     {
@@ -136,67 +146,44 @@ public class Recolored_Switches : MonoBehaviour {
         {
             int r = Random.Range(0,6);
             Switches[i].GetComponent<MeshRenderer>().material = SwitchesColors[r];
+            switchIndices[i] = r;
             SwitchesColorsString[i] = colorNames[r];
         }
     }
-	
-	//twitch plays
+
+    void GenerateStage()
+    {
+        int count = switchStates.Count(x => x == true);
+        int[][] usingTable = (count < 3) ? tableLow : tableHigh;
+        Debug.Log(usingTable.Join());
+        correctSwitch = usingTable[lastFlipped  ][ledIndices[stage]];
+
+        Debug.LogFormat("[Recolored Switches #{0}] There are {1} switches in the up position. The {2} LED is {3} and the previous switch is {4}.", moduleID, count, order[stage], LEDsColorsString[stage], colorNames[lastFlipped]);
+        Debug.LogFormat("[Recolored Switches #{0}] The correct switch to flip is switch {1}.", moduleID, correctSwitch + 1);
+
+    }
+
+    //twitch plays
     #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} 1 2 3 4 5 [Toggles the specified switches where 1 is leftmost and 5 is rightmost]";
     #pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
     {
-        string[] parameters = command.Split(' ');
-        bool extraitem = false;
-        if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(parameters[0], @"^\s*toggle\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(parameters[0], @"^\s*switch\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(parameters[0], @"^\s*flip\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        command.Trim().ToUpperInvariant();
+        if (Regex.IsMatch(command, @"^\s*((press)|(flip)\s+)?[1-5]\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
-            extraitem = true;
-            if (parameters.Length == 1)
-            {
-                yield return "sendtochaterror Please specify the switches that need to be flipped!";
-                yield break;
-            }
-        }
-        string[] valids = { "1", "2", "3", "4", "5" };
-        if (extraitem)
-        {
-            for(int i = 1; i < parameters.Length; i++)
-            {
-                if (!valids.Contains(parameters[i]))
-                {
-                    yield return "sendtochaterror The specified switch '"+parameters[i]+"' is invalid!";
-                    yield break;
-                }
-            }
-            yield return null;
-            for (int i = 1; i < parameters.Length; i++)
-            {
-                int temp = 0;
-                int.TryParse(parameters[i], out temp);
-                temp -= 1;
-                Switches[temp].GetComponent<KMSelectable>().OnInteract();
-                yield return new WaitForSeconds(0.2f);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                if (!valids.Contains(parameters[i]))
-                {
-                    yield return "sendtochaterror The specified switch '" + parameters[i] + "' is invalid!";
-                    yield break;
-                }
-            }
-            yield return null;
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                int temp = 0;
-                int.TryParse(parameters[i], out temp);
-                temp -= 1;
-                Switches[temp].GetComponent<KMSelectable>().OnInteract();
-                yield return new WaitForSeconds(0.2f);
-            }
+            while (isAnimating) yield return null;
+            Switches[int.Parse(command.Split(' ').Last()) - 1].GetComponent<KMSelectable>().OnInteract();
+            yield return new WaitForSeconds(0.1f);
         }
     }
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        while (!moduleSolved)
+        { 
+            while (isAnimating) yield return true;
+            Switches[correctSwitch].GetComponent<KMSelectable>().OnInteract();
+        }
+    }
+
 }
