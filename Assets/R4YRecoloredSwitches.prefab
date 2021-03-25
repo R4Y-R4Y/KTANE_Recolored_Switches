@@ -3519,19 +3519,19 @@ MonoBehaviour:
   Bomb: {fileID: 114576560971520074}
   Module: {fileID: 114866174492561768}
   SwitchesColors:
-  - {fileID: 2100000, guid: 256ce1b55aeff144198af18df29bc174, type: 2}
-  - {fileID: 2100000, guid: b7db8c643be254342a6478d98cff4f5b, type: 2}
-  - {fileID: 2100000, guid: 684687d59a5d52b40bf447b2d3728776, type: 2}
-  - {fileID: 2100000, guid: 1c6d628709d059a4b9f122526ee40245, type: 2}
   - {fileID: 2100000, guid: a463908fdf68b614b83be06676015c0b, type: 2}
   - {fileID: 2100000, guid: a8cc5de45c1a4124eabc820a27e514b1, type: 2}
+  - {fileID: 2100000, guid: b7db8c643be254342a6478d98cff4f5b, type: 2}
+  - {fileID: 2100000, guid: 256ce1b55aeff144198af18df29bc174, type: 2}
+  - {fileID: 2100000, guid: 684687d59a5d52b40bf447b2d3728776, type: 2}
+  - {fileID: 2100000, guid: 1c6d628709d059a4b9f122526ee40245, type: 2}
   LEDsColors:
-  - {fileID: 2100000, guid: 7045f1d3cc3d1d44fb7beefbca38dba3, type: 2}
-  - {fileID: 2100000, guid: 00a02dfc0511dcb4185f7a775ae45efb, type: 2}
-  - {fileID: 2100000, guid: 1a702d25b57d920438b29ff438ee134c, type: 2}
-  - {fileID: 2100000, guid: 1c4c649e99b8af94a990be42e38c0819, type: 2}
   - {fileID: 2100000, guid: 8888b5712de9f9f48b1f4459c62422a3, type: 2}
   - {fileID: 2100000, guid: da60a68ad624a9349916b8e6a23bddcb, type: 2}
+  - {fileID: 2100000, guid: 00a02dfc0511dcb4185f7a775ae45efb, type: 2}
+  - {fileID: 2100000, guid: 7045f1d3cc3d1d44fb7beefbca38dba3, type: 2}
+  - {fileID: 2100000, guid: 1a702d25b57d920438b29ff438ee134c, type: 2}
+  - {fileID: 2100000, guid: 1c4c649e99b8af94a990be42e38c0819, type: 2}
   - {fileID: 2100000, guid: b9e4b7417a37c7249a46e03a2a777951, type: 2}
   - {fileID: 2100000, guid: f173ad5ccef8ed543a921a7e18a7e5a6, type: 2}
 --- !u!114 &114269335205701710
